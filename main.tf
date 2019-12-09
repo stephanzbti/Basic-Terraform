@@ -30,24 +30,67 @@ locals {
     Modules
 */
 
-module "vpc" {
-    source        = "./Modules/VPC/"
 
-    cidr_block    = local.cidr_block
-    tags          = local.tags
+/*
+    Networks
+*/
+
+module "vpc" {
+    source          = "./Modules/VPC/"
+
+    cidr_block      = local.cidr_block
+    tags            = local.tags
 }
 
 module "igw" {
-    source        = "./Modules/VPC/Internet-Gateway"
+    source          = "./Modules/VPC/Internet-Gateway"
 
-    vpc           = module.vpc.vpc  
-    tags          = local.tags
+    vpc             = module.vpc.vpc  
+    tags            = local.tags
 }
 
 module subnets {
-    source        = "./Modules/VPC/Subnets"
+    source          = "./Modules/VPC/Subnets"
 
-    vpc           = module.vpc.vpc
-    igw           = module.igw.igw
-    tags          = local.tags
+    vpc             = module.vpc.vpc
+    igw             = module.igw.igw
+    tags            = local.tags
+}
+
+module "security_loadbalanecer" {
+    source          = "./Modules/VPC/Security-Groups"
+
+    vpc             = module.vpc.vpc
+    ingress_from_port       = 443
+    ingress_to_port         = 443
+    ingress_protocol        = "tcp"
+    ingress_cidr_block      = ["0.0.0.0/0"]
+    egress_from_port        = 0
+    egress_to_port          = 0
+    egress_protocol         = "-1"
+    egress_cidr_block       = ["0.0.0.0/0"]
+
+    tags                = local.tags
+}
+
+module "security_loadbalanecer_rule" {
+    source          = "./Modules/VPC/Security-Groups/Security-Group-Rule"
+
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp" 
+    cidr_block      = ["0.0.0.0/0"]
+    security_group  = module.security_loadbalanecer.security_group
+}
+
+/*
+    ALB
+*/
+
+module "ALB" {
+    source          = "./Modules/ALB"
+
+    security_group  = module.security_loadbalanecer.security_group
+    subnets         = module.subnets.subnet_public
+    tags            = local.tags
 }
