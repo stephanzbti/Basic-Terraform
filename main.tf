@@ -4,8 +4,8 @@
 
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-files-hotmart"
-    key            = "Infraestructure/Development/terraform.tfstate"
+    bucket         = "terraform-state-files"
+    key            = "development/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "terraform-state-development-locks"
     encrypt        = false
