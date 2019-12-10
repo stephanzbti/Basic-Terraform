@@ -7,12 +7,7 @@ variable "tags" {
   type        = any
 }
 
-variable "ami_id" {
+variable "ec2" {
   description = "Instance - AMI"
-  type        = string
-}
-
-variable "instance_type" {
-  description = "Instance - Type"
-  type        = string
+  type        = list
 }
