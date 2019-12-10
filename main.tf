@@ -85,7 +85,7 @@ module "alb" {
     source          = "./Modules/ALB"
 
     security_group  = module.security_loadbalanecer.security_group
-    subnets         = module.subnets.subnet_private
+    subnets         = module.subnets.subnet_public
     tags            = local.tags
 }
 
