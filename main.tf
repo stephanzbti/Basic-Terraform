@@ -49,11 +49,25 @@ module "igw" {
     tags            = local.tags
 }
 
+module "eip" {
+    source          = "./Modules/VPC/Elastic-IP"
+
+    tags            = local.tags
+}
+
+module "ngw" {
+    source          = "./Modules/VPC/Nat-Gateway"
+
+    gateways        = [[module.eip.eip.id, module.subnets.subnet_public[0].id]] 
+    tags            = local.tags
+}
+
 module subnets {
     source          = "./Modules/VPC/Subnets"
 
     vpc             = module.vpc.vpc
     igw             = module.igw.igw
+    ngw             = module.ngw.gateways[0]
     tags            = local.tags
 }
 
@@ -61,7 +75,7 @@ module "security_loadbalanecer" {
     source          = "./Modules/VPC/Security-Groups"
 
     vpc             = module.vpc.vpc
-    ingress         = [[ 80, 80, "tcp", ["0.0.0.0/0"]], [ 443, 443, "tcp", ["0.0.0.0/0"]]]
+    ingress         = [[ 80, 80, "tcp", ["0.0.0.0/0"]], [ 8080, 8080, "tcp", ["0.0.0.0/0"]]]
     egress          = [[ 0, 0, "-1", ["0.0.0.0/0"]], [ 0, 0, "-1", ["0.0.0.0/0"]]]
 
     tags            = local.tags
@@ -85,7 +99,7 @@ module "alb" {
     source          = "./Modules/ALB"
 
     security_group  = module.security_loadbalanecer.security_group
-    subnets         = module.subnets.subnet_public
+    subnets         = concat(module.subnets.subnet_public, module.subnets.subnet_private)
     tags            = local.tags
 }
 
@@ -101,7 +115,7 @@ module "listeners" {
     source            = "./Modules/ALB/Listener"
 
     alb               = module.alb.alb
-    listener          = [[80, "HTTP", "forward", module.target_groups.target_groups[0].arn], [443, "HTTP", "forward", module.target_groups.target_groups[1].arn]]
+    listener          = [[80, "HTTP", "forward", module.target_groups.target_groups[0].arn], [8080, "HTTP", "forward", module.target_groups.target_groups[1].arn]]
 }
 
 module "target_group_attachment" {
