@@ -78,9 +78,11 @@ resource "aws_network_acl" "private" {
 */
 
 resource "aws_subnet" "public" {
-    count               = length(data.aws_availability_zones.available.names)/2
-    vpc_id              = var.vpc.id
-    availability_zone   = element(data.aws_availability_zones.available.names, count.index+length(data.aws_availability_zones.available.names)/2)
+    count                   = length(data.aws_availability_zones.available.names)/2
+    vpc_id                  = var.vpc.id
+    availability_zone       = element(data.aws_availability_zones.available.names, count.index+length(data.aws_availability_zones.available.names)/2)
+    map_public_ip_on_launch = true
+
 
     cidr_block = cidrsubnet(
         signum(length(var.cidr_block)) == 1 ? var.cidr_block : var.vpc.cidr_block,
@@ -105,6 +107,7 @@ resource "aws_route" "public" {
 
 resource "aws_route_table_association" "public" {
   count          = length(data.aws_availability_zones.available.names)/2
+  
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = aws_route_table.public.id
 }
