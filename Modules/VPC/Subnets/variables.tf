@@ -24,6 +24,11 @@ variable "igw" {
   type          = any
 }
 
+variable "ngw" {
+  description   = "Subnet - Nat Gateway"
+  type          = any
+}
+
 variable "tags" {
   description   = "Subnet - VPC"
   type          = any
