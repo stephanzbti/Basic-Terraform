@@ -91,5 +91,4 @@ terraform apply
  
 > Obs: Para que este projeto execute corretamente, foram criados duas AMI na região *US-EAST-1*. É necessário que esse projeto seja executado nesta região.
  
-Após a execução destes dois comandos será criado automaticamente toda a infraestrutura, e no final será printado na tela o DNS Name do Load Balancer criado, para que seja feito o acesso aos sites.
-
+Após a execução destes dois comandos será criado automaticamente toda a infraestrutura, e no final será printado na tela o DNS Name do Load Balancer criado, para que seja feito o acesso aos sites. Os sites podem ser acessados pelo LoadBalancer utilizando as portas 80 (Nginx) e 8080 (Apache).
