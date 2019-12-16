@@ -4,7 +4,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-files"
+    bucket         = "terraform-20191216191121380700000001"
     key            = "development/terraform.tfstate"
     dynamodb_table = "terraform-state-locks"
     encrypt        = false
@@ -147,22 +147,24 @@ module "target_group_attachment" {
     EC2
 */
 
-module "ec2" {
-    source          = "./Modules/EC2"
+# module "ec2" {
+#     source          = "./Modules/EC2"
 
-    ec2             = [
-        [
-            data.aws_ami.ubuntu, 
-            "t2.micro", 
-            module.security_ec2.security_group.*.id, 
-            module.subnets.subnet_private[0].id
-        ], 
-        [
-            data.aws_ami.ubuntu, 
-            "t2.micro", 
-            module.security_ec2.security_group.*.id, 
-            module.subnets.subnet_private[0].id
-        ]
-    ]
-    tags            = local.tags
-}
+#     ec2             = [
+#         [
+#             data.aws_ami.ubuntu, 
+#             "t2.micro", 
+#             module.security_ec2.security_group.*.id, 
+#             module.subnets.subnet_private[0].id,
+#             "apt-get update; apt-get install nginx;"
+#         ], 
+#         [
+#             data.aws_ami.ubuntu, 
+#             "t2.micro", 
+#             module.security_ec2.security_group.*.id, 
+#             module.subnets.subnet_private[0].id,
+#             "apt-get update; apt-get install apache2;"
+#         ]
+#     ]
+#     tags            = local.tags
+# }
