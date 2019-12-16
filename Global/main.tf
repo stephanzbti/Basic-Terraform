@@ -9,8 +9,6 @@ provider "aws" {  } # Getting from OS Environment
 */
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "terraform-state-files"
-
   versioning {
     enabled = true
   }
