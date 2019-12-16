@@ -137,11 +137,11 @@ module "listeners" {
     listener          = [[80, "HTTP", "forward", module.target_groups.target_groups[0].arn], [8080, "HTTP", "forward", module.target_groups.target_groups[1].arn]]
 }
 
-module "target_group_attachment" {
-    source            = "./Modules/ALB/Target-Group/Attachament"
+# module "target_group_attachment" {
+#     source            = "./Modules/ALB/Target-Group/Attachament"
     
-    ec2               = [[module.target_groups.target_groups[0].arn, module.ec2.ec2[0].id, 80], [module.target_groups.target_groups[1].arn, module.ec2.ec2[1].id, 80]]
-}
+#     ec2               = [[module.target_groups.target_groups[0].arn, module.ec2.ec2[0].id, 80], [module.target_groups.target_groups[1].arn, module.ec2.ec2[1].id, 80]]
+# }
 
 /*
     EC2
