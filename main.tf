@@ -26,6 +26,26 @@ locals {
 }
 
 /*
+    Data
+*/
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+/*
     Modules
 */
 
@@ -130,6 +150,19 @@ module "target_group_attachment" {
 module "ec2" {
     source          = "./Modules/EC2"
 
-    ec2             = [["ami-0e926d96c57242e18", "t3.micro", module.security_ec2.security_group.*.id, module.subnets.subnet_private[0].id], ["ami-02d8b9d64843f26c4", "t3.micro", module.security_ec2.security_group.*.id, module.subnets.subnet_private[0].id]]
+    ec2             = [
+        [
+            data.aws_ami.ubuntu, 
+            "t2.micro", 
+            module.security_ec2.security_group.*.id, 
+            module.subnets.subnet_private[0].id
+        ], 
+        [
+            data.aws_ami.ubuntu, 
+            "t2.micro", 
+            module.security_ec2.security_group.*.id, 
+            module.subnets.subnet_private[0].id
+        ]
+    ]
     tags            = local.tags
 }
