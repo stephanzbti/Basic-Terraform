@@ -32,6 +32,8 @@ terraform apply
  
 Você pode editar a estrutura inicial criada(S3 e DynamoDB), editando o arquivo *main.tf* existente dentro da pasta *Global/*. As linhas 11 até a 24 fazem referência ao S3 criado, é possível modificar o nome do Bucket, caso já exista outro com o mesmo nome. As linhas 26 até a 34 fazem referência ao DynamoDB criado, é possível modificar o nome da tabela criada.
  
+> Ao se aplicar a estrutura inicial, sera mostrado na tela o nome do Bucket S3 criado. Com este valor sera necessario fazer a correcao no Terraform Backend do Core do projeto no arquivo *main.tf*, modificando o S3 Bucket destino do Terraform BackEnd.
+
 ### Modules
  
 Os módulos criados para utilizar neste projeto são:
@@ -88,7 +90,6 @@ Para iniciar o projeto é necessário a execução de dois comandos, no root do 
 terraform init
 terraform apply
 ```
- 
-> Obs: Para que este projeto execute corretamente, foram criados duas AMI na região *US-EAST-1*. É necessário que esse projeto seja executado nesta região.
- 
+> Obs: E altamente necessario criar a estrutura necessaria do Terraform BackEnd, descrita no inicio deste projeto e modificar os arquivos necessarios tambem descritos no inicio deste projeto.
+
 Após a execução destes dois comandos será criado automaticamente toda a infraestrutura, e no final será printado na tela o DNS Name do Load Balancer criado, para que seja feito o acesso aos sites. Os sites podem ser acessados pelo LoadBalancer utilizando as portas 80 (Nginx) e 8080 (Apache).
