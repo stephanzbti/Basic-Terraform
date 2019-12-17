@@ -9,6 +9,7 @@ resource "aws_instance" "instance" {
     instance_type              = var.ec2[count.index][1]
     vpc_security_group_ids     = var.ec2[count.index][2]
     subnet_id                  = var.ec2[count.index][3]
+    user_data                  = var.ec2[count.index][4]
 
     tags                       = var.tags
     volume_tags                = var.tags
