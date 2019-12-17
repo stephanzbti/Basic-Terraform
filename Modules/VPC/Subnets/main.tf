@@ -11,7 +11,7 @@ data "aws_availability_zones" "available" {
 */
 
 locals {
-    private_subnet_count = var.max_subnet_count == 0 ? length(data.aws_availability_zones.available.names) : var.max_subnet_count
+    private_subnet_count = var.max_subnet_count == 0 ? floor(length(data.aws_availability_zones.available.names)) : var.max_subnet_count
 }
 
 /*
@@ -23,7 +23,7 @@ locals {
 */
 
 resource "aws_subnet" "private" {
-    count               = length(data.aws_availability_zones.available.names)/2
+    count               = floor(length(data.aws_availability_zones.available.names)/2)
     vpc_id              = var.vpc.id
     availability_zone   = element(data.aws_availability_zones.available.names, count.index)
 
@@ -43,7 +43,7 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-    count             = length(data.aws_availability_zones.available.names)/2
+    count             = floor(length(data.aws_availability_zones.available.names)/2)
     subnet_id         = element(aws_subnet.private.*.id, count.index)
     route_table_id    = element(aws_route_table.private.*.id, count.index)
 }
@@ -84,16 +84,16 @@ resource "aws_network_acl" "private" {
 */
 
 resource "aws_subnet" "public" {
-    count                   = length(data.aws_availability_zones.available.names)/2
+    count                   = floor(length(data.aws_availability_zones.available.names)/2)
     vpc_id                  = var.vpc.id
-    availability_zone       = element(data.aws_availability_zones.available.names, count.index+length(data.aws_availability_zones.available.names)/2)
+    availability_zone       = element(data.aws_availability_zones.available.names, count.index+floor(length(data.aws_availability_zones.available.names)/2))
     map_public_ip_on_launch = true
 
 
     cidr_block = cidrsubnet(
         signum(length(var.cidr_block)) == 1 ? var.cidr_block : var.vpc.cidr_block,
         ceil(log(local.private_subnet_count * 2, 2)),
-        count.index+length(data.aws_availability_zones.available.names)/2
+        count.index+floor(length(data.aws_availability_zones.available.names)/2)
     )
 
     tags = var.tags
@@ -112,7 +112,7 @@ resource "aws_route" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-    count          = length(data.aws_availability_zones.available.names)/2
+    count          = floor(length(data.aws_availability_zones.available.names)/2)
     
     subnet_id      = element(aws_subnet.public.*.id, count.index)
     route_table_id = aws_route_table.public.id
