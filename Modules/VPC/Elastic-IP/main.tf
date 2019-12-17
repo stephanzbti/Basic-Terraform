@@ -3,6 +3,6 @@
 */
 
 resource "aws_eip" "eip" {
-    vpc             = false
+    vpc             = true
     tags            = var.tags
 }
