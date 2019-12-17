@@ -4,7 +4,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "terraform-20191216191121380700000001"
+    bucket         = ""
     key            = "development/terraform.tfstate"
     dynamodb_table = "terraform-state-locks"
     encrypt        = false
@@ -31,18 +31,12 @@ locals {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
+  owners = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
   }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
 }
 
 /*
@@ -104,8 +98,8 @@ module "security_ec2" {
     source          = "./Modules/VPC/Security-Groups"
 
     vpc             = module.vpc.vpc
-    ingress         = [[ 80, 80, "tcp", [module.vpc.vpc.cidr_block]], [ 443, 443, "tcp", [module.vpc.vpc.cidr_block]]]
-    egress          = [[ 0, 0, "-1", [module.vpc.vpc.cidr_block]], [ 0, 0, "-1", [module.vpc.vpc.cidr_block]]]
+    ingress         = [[ 80, 80, "tcp", ["0.0.0.0/0"]], [ 443, 443, "tcp", [module.vpc.vpc.cidr_block]]]
+    egress          = [[ 0, 0, "-1", ["0.0.0.0/0"]], [ 0, 0, "-1", [module.vpc.vpc.cidr_block]]]
 
     tags            = local.tags
 }
@@ -137,34 +131,42 @@ module "listeners" {
     listener          = [[80, "HTTP", "forward", module.target_groups.target_groups[0].arn], [8080, "HTTP", "forward", module.target_groups.target_groups[1].arn]]
 }
 
-# module "target_group_attachment" {
-#     source            = "./Modules/ALB/Target-Group/Attachament"
+module "target_group_attachment" {
+    source            = "./Modules/ALB/Target-Group/Attachament"
     
-#     ec2               = [[module.target_groups.target_groups[0].arn, module.ec2.ec2[0].id, 80], [module.target_groups.target_groups[1].arn, module.ec2.ec2[1].id, 80]]
-# }
+    ec2               = [[module.target_groups.target_groups[0].arn, module.ec2.ec2[0].id, 80], [module.target_groups.target_groups[1].arn, module.ec2.ec2[1].id, 80]]
+}
 
 /*
     EC2
 */
 
-# module "ec2" {
-#     source          = "./Modules/EC2"
+module "ec2" {
+    source          = "./Modules/EC2"
 
-#     ec2             = [
-#         [
-#             data.aws_ami.ubuntu, 
-#             "t2.micro", 
-#             module.security_ec2.security_group.*.id, 
-#             module.subnets.subnet_private[0].id,
-#             "apt-get update; apt-get install nginx;"
-#         ], 
-#         [
-#             data.aws_ami.ubuntu, 
-#             "t2.micro", 
-#             module.security_ec2.security_group.*.id, 
-#             module.subnets.subnet_private[0].id,
-#             "apt-get update; apt-get install apache2;"
-#         ]
-#     ]
-#     tags            = local.tags
-# }
+    ec2             = [
+        [
+            data.aws_ami.ubuntu.id, 
+            "t2.micro", 
+            module.security_ec2.security_group.*.id, 
+            module.subnets.subnet_private[0].id,
+            <<EOT
+#!/usr/bin/env bash
+apt-get update
+apt-get install -y nginx
+            EOT
+        ], 
+        [
+            data.aws_ami.ubuntu.id, 
+            "t2.micro", 
+            module.security_ec2.security_group.*.id, 
+            module.subnets.subnet_private[0].id,
+            <<EOT
+#!/usr/bin/env bash 
+apt-get update
+apt-get install -y apache2
+            EOT
+        ]
+    ]
+    tags            = local.tags
+}
